@@ -5,6 +5,7 @@ This project transforms files inside a folder into a video. Used for compatibili
 - [ ] Create video from files
 - [ ] Remove files once video is created
 - [ ] Save video to custom location
+- [ ] GitHub Release via actions
 
 ## Build & run project
 
