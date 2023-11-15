@@ -19,3 +19,6 @@ To run project simply run (or better yet use VS code debugger):
 ```sh
 go run .
 ```
+
+## Resources
+- https://github.com/icza/mjpeg
