@@ -1,5 +1,5 @@
 # Image feed to video
-This project transforms files inside a folder into a video. Used for compatibility with old camera which doesn't support `rtsp` protocol.
+This project transforms files inside a folder into a video. Used for compatibility with old camera which doesn't support modern(ish) video streaming protocols eg. `rtsp` protocol. and only supports `ftp` file feed.
 
 ## Goals
 - [x] Create video from files
