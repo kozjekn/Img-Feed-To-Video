@@ -4,9 +4,9 @@ This project transforms files inside a folder into a video. Used for compatibili
 ## Goals
 - [x] Create video from files
 - [x] Edit each image so that it has mod date in top left corner
-- [ ] Add support for arguments
+- [x] Add support for arguments
 - [x] Remove files once video is created
-- [ ] Save video to custom location
+- [x] Save video to custom location
 - [ ] GitHub Release via actions
 
 ## Build & run project

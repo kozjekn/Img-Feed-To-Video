@@ -17,13 +17,19 @@ import (
 )
 
 func main() {
+	if len(os.Args) != 4 {
+		panic("Invalid usage: Use this format: imgfeedtovideo {removefiles(true/false) pathToFeedFolder} {outputPathWithFileName}")
+	}
+
+	isRmFiles := os.Args[1] == "true"
+	feedDir := os.Args[2]
+	outputPath := os.Args[3]
+
 	// Load the font
 	font, _ := truetype.Parse(goregular.TTF)
 
-	feedDir := "./examples"
-	isRmFiles := false
-	// Video size: 200x100 pixels, FPS: 2
-	aw, err := mjpeg.New("test.avi", 200, 100, 1)
+	// Init video
+	aw, err := mjpeg.New(outputPath, 200, 100, 1)
 	if err != nil {
 		log.Fatal(err)
 	}
