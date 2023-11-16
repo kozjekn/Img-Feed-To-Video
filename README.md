@@ -7,7 +7,7 @@ This project transforms files inside a folder into a video. Used for compatibili
 - [x] Add support for arguments
 - [x] Remove files once video is created
 - [x] Save video to custom location
-- [ ] GitHub Release via actions
+- [x] Build via GitHub actions
 
 ## Build & run project
 
