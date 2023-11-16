@@ -21,6 +21,7 @@ func main() {
 	font, _ := truetype.Parse(goregular.TTF)
 
 	feedDir := "./examples"
+	isRmFiles := false
 	// Video size: 200x100 pixels, FPS: 2
 	aw, err := mjpeg.New("test.avi", 200, 100, 1)
 	if err != nil {
@@ -32,15 +33,16 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	rmFiles := []string{}
 	for _, file := range fls {
 		if !file.IsDir() {
 			filename := fmt.Sprintf("%s/%s", feedDir, file.Name())
 			fd, _ := file.Info()
 
 			reader, err := os.Open(filename)
-			img, _, _ := image.Decode(reader)
-			newImg, err := processImg(img, font, fd.ModTime().Format("2006-01-02 15:04:05"))
+			newImg, err := processImg(reader, font, fd.ModTime().Format("2006-01-02 15:04:05"))
+			reader.Close()
+
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -49,16 +51,26 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			reader.Close()
+			rmFiles = append(rmFiles, filename)
 		}
 	}
 
 	if err := aw.Close(); err != nil {
 		log.Fatal(err)
 	}
+	if isRmFiles {
+		log.Print("Removing files")
+		for _, fileName := range rmFiles {
+			if err := os.Remove(fileName); err != nil {
+				log.Fatal(err)
+			}
+		}
+	}
+
 }
 
-func processImg(img image.Image, font *truetype.Font, text string) ([]byte, error) {
+func processImg(reader *os.File, font *truetype.Font, text string) ([]byte, error) {
+	img, _, _ := image.Decode(reader)
 	const fontSize int = 70
 	size := img.Bounds().Size()
 	imgDraw := image.NewRGBA(image.Rect(0, 0, size.X, size.Y))
