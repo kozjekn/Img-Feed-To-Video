@@ -21,7 +21,13 @@ jobs:
         go-version: '1.21.4'
       
     - name: Build
-      run: go build -v ./...
-      
+      run: go build -v -o ./output/imgfeedtovideo ./...
+          
     - name: Build WIN
-      run: GOOS=windows GOARCH=amd64 go build -v ./...
+      run: GOOS=windows GOARCH=amd64 go build -v -o ./output/imgfeedtovideo.exe ./...
+
+    - name: Collect builds
+      with:
+        name: output
+        path: output
+      
