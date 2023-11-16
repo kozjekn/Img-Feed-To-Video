@@ -1,34 +1,70 @@
-# This workflow will build a golang project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
-
 name: Go
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - "main"
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - "main"
+  release:
+    types:
+      - created
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.21.4'
-      
-    - name: Build
-      run: go build -v -o ./output/imgfeedtovideo ./...
-          
-    - name: Build WIN
-      run: GOOS=windows GOARCH=amd64 go build -v -o ./output/imgfeedtovideo.exe ./...
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21.4'
 
-    - name: Collect builds
-      uses: actions/upload-artifact@v3
-      with:
-        name: release
-        path: output/*
-      
+      - name: Build
+        run: go build -v -o ./output/imgfeedtovideo ./...
+
+      - name: Build WIN
+        run: GOOS=windows GOARCH=amd64 go build -v -o ./output/imgfeedtovideo.exe ./...
+
+      - name: Collect builds
+        uses: actions/upload-artifact@v3
+        with:
+          name: release
+          path: output/*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./output/imgfeedtovideo
+          asset_name: imgfeedtovideo
+          asset_content_type: application/octet-stream
+
+      - name: Upload WIN Release Asset
+        id: upload-release-asset-win
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./output/imgfeedtovideo.exe
+          asset_name: imgfeedtovideo.exe
+          asset_content_type: application/octet-stream
