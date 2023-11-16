@@ -5,7 +5,7 @@ This project transforms files inside a folder into a video. Used for compatibili
 - [x] Create video from files
 - [x] Edit each image so that it has mod date in top left corner
 - [ ] Add support for arguments
-- [ ] Remove files once video is created
+- [x] Remove files once video is created
 - [ ] Save video to custom location
 - [ ] GitHub Release via actions
 
@@ -20,7 +20,7 @@ go mod tidy
 To run project simply run (or better yet use VS code debugger):
 
 ```sh
-go run .
+go run . false ./examples ./output/test.avi
 ```
 
 ## Resources
