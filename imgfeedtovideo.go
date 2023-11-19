@@ -9,12 +9,20 @@ import (
 	"image/jpeg"
 	"log"
 	"os"
+	"sort"
+	"sync"
 
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
 	"github.com/icza/mjpeg"
 	"golang.org/x/image/font/gofont/goregular"
 )
+
+type ImgProcessor struct {
+	mu     sync.Mutex
+	images map[int]([]byte)
+	wg     sync.WaitGroup
+}
 
 func main() {
 	if len(os.Args) != 4 {
@@ -40,24 +48,36 @@ func main() {
 		log.Fatal(err)
 	}
 	rmFiles := []string{}
-	for _, file := range fls {
+	processor := ImgProcessor{images: make(map[int][]byte)}
+
+	//Sort by mod date
+	sort.Slice(fls, func(i, j int) bool {
+		fd1, _ := fls[i].Info()
+		fd2, _ := fls[j].Info()
+		return fd1.ModTime().Unix() < fd2.ModTime().Unix()
+	})
+
+	for i, file := range fls {
 		if !file.IsDir() {
 			filename := fmt.Sprintf("%s/%s", feedDir, file.Name())
 			fd, _ := file.Info()
 
-			reader, err := os.Open(filename)
-			newImg, err := processImg(reader, font, fd.ModTime().Format("2006-01-02 15:04:05"))
-			reader.Close()
+			processor.wg.Add(1)
+			go processImg(filename, font, fd.ModTime().Format("2006-01-02 15:04:05"), &processor, i)
 
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			err = aw.AddFrame(newImg)
 			if err != nil {
 				log.Fatal(err)
 			}
 			rmFiles = append(rmFiles, filename)
+		}
+	}
+
+	processor.wg.Wait()
+	for i, _ := range fls {
+		_ = i
+		err = aw.AddFrame(processor.images[i])
+		if err != nil {
+			log.Fatal(err)
 		}
 	}
 
@@ -75,7 +95,11 @@ func main() {
 
 }
 
-func processImg(reader *os.File, font *truetype.Font, text string) ([]byte, error) {
+func processImg(filename string, font *truetype.Font, text string, processor *ImgProcessor, index int) error {
+
+	reader, err := os.Open(filename)
+	defer reader.Close()
+
 	img, _, _ := image.Decode(reader)
 	size := img.Bounds().Size()
 	var fontSize int = 22
@@ -94,16 +118,22 @@ func processImg(reader *os.File, font *truetype.Font, text string) ([]byte, erro
 
 	// Draw text on the image
 	pt := freetype.Pt(0, fontSize)
-	_, err := ctx.DrawString(text, pt)
+	_, err = ctx.DrawString(text, pt)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	var newImg bytes.Buffer
 	jpeg.Encode(&newImg, imgDraw, &jpeg.Options{Quality: jpeg.DefaultQuality})
-	return newImg.Bytes(), nil
+
+	processor.mu.Lock()
+	defer processor.wg.Done()
+	defer processor.mu.Unlock()
+	processor.images[index] = newImg.Bytes()
+
+	return nil
 }
