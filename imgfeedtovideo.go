@@ -77,8 +77,11 @@ func main() {
 
 func processImg(reader *os.File, font *truetype.Font, text string) ([]byte, error) {
 	img, _, _ := image.Decode(reader)
-	const fontSize int = 70
 	size := img.Bounds().Size()
+	var fontSize int = 22
+	if size.X/50 > 22 {
+		fontSize = int(size.X / 50)
+	}
 	imgDraw := image.NewRGBA(image.Rect(0, 0, size.X, size.Y))
 	draw.Draw(imgDraw, imgDraw.Bounds(), img, image.Point{}, draw.Src)
 
