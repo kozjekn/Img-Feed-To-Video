@@ -100,7 +100,10 @@ func processImg(filename string, font *truetype.Font, text string, processor *Im
 	reader, err := os.Open(filename)
 	defer reader.Close()
 
-	img, _, _ := image.Decode(reader)
+	img, _, err := image.Decode(reader)
+	if err != nil {
+		log.Panic(err)
+	}
 	size := img.Bounds().Size()
 	var fontSize int = 22
 	if size.X/50 > 22 {
