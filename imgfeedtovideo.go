@@ -75,7 +75,10 @@ func main() {
 	processor.wg.Wait()
 	for i, _ := range fls {
 		_ = i
-		err = aw.AddFrame(processor.images[i])
+		if processor.images[i] != nil {
+			err = aw.AddFrame(processor.images[i])
+		}
+
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -102,7 +105,9 @@ func processImg(filename string, font *truetype.Font, text string, processor *Im
 
 	img, _, err := image.Decode(reader)
 	if err != nil {
-		log.Panic(err)
+		log.Printf("File %s skipped as it appears to be corrupted. Decoder error: %s", filename, err.Error())
+		processor.images[index] = nil
+		return nil
 	}
 	size := img.Bounds().Size()
 	var fontSize int = 22
